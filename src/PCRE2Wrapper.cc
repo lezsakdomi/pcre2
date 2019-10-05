@@ -33,8 +33,8 @@ void PCRE2Wrapper::Init(std::string name, v8::Local<v8::Object> exports) {
 	Nan::SetAccessor(proto, Nan::New("multiline").ToLocalChecked(), PCRE2Wrapper::PropertyGetter);
 	Nan::SetAccessor(proto, Nan::New("sticky").ToLocalChecked(), PCRE2Wrapper::PropertyGetter);
 
-	constructor.Reset(tpl->GetFunction());
-	exports->Set(Nan::New(name).ToLocalChecked(), tpl->GetFunction());
+	constructor.Reset(Nan::GetFunction(tpl).ToLocalChecked());
+	exports->Set(Nan::New(name).ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
 }
 
 void PCRE2Wrapper::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
@@ -50,8 +50,8 @@ void PCRE2Wrapper::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 	std::string flags;
 	
 	if ( info[0]->IsString() ) {
-		pattern = *Nan::Utf8String(info[0]->ToString());
-		flags = info[1]->IsUndefined() ? "" : *Nan::Utf8String(info[1]->ToString());
+		pattern = *Nan::Utf8String(Nan::To<v8::String>(info[0]).ToLocalChecked());
+		flags = info[1]->IsUndefined() ? "" : *Nan::Utf8String(Nan::To<v8::String>(info[1]).ToLocalChecked());
 	}
 	else if ( info[0]->IsRegExp() ) {
 		v8::Local<v8::RegExp> v8Regexp = info[0].As<v8::RegExp>();
@@ -271,7 +271,7 @@ void PCRE2Wrapper::Replace(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 					named->Set(Nan::New(ent.first).ToLocalChecked(), Nan::New(ent.second).ToLocalChecked());
 				}
 
-				v8::Local<v8::Value> returned = callback->Call(Nan::GetCurrentContext()->Global(), argCount, argVector);
+				v8::Local<v8::Value> returned = Nan::Callback(callback).Call(argCount, argVector);
 
 				delete[] argVector;
 
@@ -345,7 +345,7 @@ NAN_SETTER(PCRE2Wrapper::PropertySetter) {
 	std::string name = *Nan::Utf8String(property);
 	
 	if ( name == "lastIndex" ) {
-		int32_t val = value->Int32Value();
+		int32_t val = Nan::To<int32_t>(value).FromJust();
 		obj->lastIndex = val < 0 ? 0 : val;
 		info.GetReturnValue().Set(Nan::New<v8::Integer>((uint32_t)obj->lastIndex));
 	}
