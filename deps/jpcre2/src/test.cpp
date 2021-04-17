@@ -85,6 +85,7 @@ int main(){
     re.getErrorNumber(); \
     re.getErrorOffset(); \
     re.getPattern(); \
+    re.getNumCaptures(); \
     re.getPatternPointer(); \
     re.getPcre2Option(); \
     re.getJpcre2Option(); \

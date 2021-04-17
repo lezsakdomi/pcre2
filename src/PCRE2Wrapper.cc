@@ -254,11 +254,15 @@ void PCRE2Wrapper::Replace(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 				const jpcre2::VecOff* vec_soff = me.getMatchStartOffsetVector();
 				size_t match_offset = (*vec_soff)[pos];
 				
-				const unsigned argCount = 3 + cg.size();
+				uint32_t numCaptures = obj->re.getNumCaptures();
+				const unsigned argCount = 3 + numCaptures + 1;
 				v8::Local<v8::Value> *argVector = new v8::Local<v8::Value>[argCount];
 
 				for ( size_t i=0; i<cg.size(); i++ ) {
 					argVector[i] = Nan::New(cg[i]).ToLocalChecked(); //match, p1, p2, ... , pn
+				}
+				for ( size_t i=cg.size(); i<numCaptures+1; i++ ) {
+					argVector[i] = Nan::Null(); // pad with null
 				}
 
 				argVector[argCount-3] = Nan::New((uint32_t)match_offset); //offset

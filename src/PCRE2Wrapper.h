@@ -1,6 +1,8 @@
 #ifndef PCRE2Wrapper_H
 #define PCRE2Wrapper_H
 
+#include <climits> // CHAR_BIT
+
 #include <nan.h>
 #include <jpcre2.hpp>
 
