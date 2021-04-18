@@ -211,13 +211,15 @@ void PCRE2Wrapper::Match(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
 void PCRE2Wrapper::Replace(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 	PCRE2Wrapper *obj = ObjectWrap::Unwrap<PCRE2Wrapper>(info.This());
-	
-	std::string subject = *Nan::Utf8String(info[0]);
+
+	Nan::Utf8String nanSubject(info[0]);
+	std::string subject(*nanSubject, nanSubject.length());
 
 	bool withCallback = info[1]->IsFunction();
 	
 	if ( !withCallback ) {
-		const char* replacement = *Nan::Utf8String(info[1]);
+		Nan::Utf8String nanReplacement(info[1]);
+		std::string replacement(*nanReplacement, nanReplacement.length());
 		
 		jp::RegexReplace & rr = obj->rr;
 	
@@ -230,7 +232,7 @@ void PCRE2Wrapper::Replace(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
 		rr.setReplaceWith(replacement);
 		
-		const char* result = rr.replace().c_str();
+		std::string result = rr.replace();
 		
 		info.GetReturnValue().Set(Nan::New(result).ToLocalChecked());
 	}
@@ -283,7 +285,7 @@ void PCRE2Wrapper::Replace(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 			}
 		);
 		
-		const char* result = me.replace().c_str();
+		std::string result = me.replace();
 		
 		info.GetReturnValue().Set(Nan::New(result).ToLocalChecked());
 	}
