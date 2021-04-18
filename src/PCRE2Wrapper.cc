@@ -34,7 +34,7 @@ void PCRE2Wrapper::Init(std::string name, v8::Local<v8::Object> exports) {
 	Nan::SetAccessor(proto, Nan::New("sticky").ToLocalChecked(), PCRE2Wrapper::PropertyGetter);
 
 	constructor.Reset(Nan::GetFunction(tpl).ToLocalChecked());
-	exports->Set(Nan::New(name).ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
+	exports->Set(Nan::GetCurrentContext(), Nan::New(name).ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
 }
 
 void PCRE2Wrapper::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
@@ -148,22 +148,22 @@ void PCRE2Wrapper::Exec(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 		std::string whole_match = obj->vec_num[0][0];
 		
 		for ( size_t i=0; i<obj->vec_num[0].size(); i++ ) {
-			result->Set(i, Nan::New(obj->vec_num[0][i]).ToLocalChecked());
+			result->Set(Nan::GetCurrentContext(), i, Nan::New(obj->vec_num[0][i]).ToLocalChecked());
 		}
 				
 		v8::Local<v8::Object> named = Nan::New<v8::Object>();
-		result->Set(Nan::New("groups").ToLocalChecked(), named);
-		result->Set(Nan::New("named").ToLocalChecked(), named);
-	
+		result->Set(Nan::GetCurrentContext(), Nan::New("groups").ToLocalChecked(), named);
+		result->Set(Nan::GetCurrentContext(), Nan::New("named").ToLocalChecked(), named);
+
 		for ( auto const& ent : obj->vec_nas[0] ) {
-			named->Set(Nan::New(ent.first).ToLocalChecked(), Nan::New(ent.second).ToLocalChecked());
+			named->Set(Nan::GetCurrentContext(), Nan::New(ent.first).ToLocalChecked(), Nan::New(ent.second).ToLocalChecked());
 		}
 		
 		int match_offset = finish_offset - whole_match.length();
-		
-		result->Set(Nan::New("index").ToLocalChecked(), Nan::New((int32_t)match_offset));
-		result->Set(Nan::New("input").ToLocalChecked(), Nan::New(subject).ToLocalChecked());
-		
+
+		result->Set(Nan::GetCurrentContext(), Nan::New("index").ToLocalChecked(), Nan::New((int32_t)match_offset));
+		result->Set(Nan::GetCurrentContext(), Nan::New("input").ToLocalChecked(), Nan::New(subject).ToLocalChecked());
+
 		info.GetReturnValue().Set(result);
 	}
 }
@@ -202,7 +202,7 @@ void PCRE2Wrapper::Match(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 		v8::Local<v8::Array> result = Nan::New<v8::Array>(result_count);
 		
 		for ( size_t i=0; i<obj->vec_num.size(); ++i ) {
-			result->Set(i, Nan::New(obj->vec_num[i][0]).ToLocalChecked());
+			result->Set(Nan::GetCurrentContext(), i, Nan::New(obj->vec_num[i][0]).ToLocalChecked());
 		}
 		
 		info.GetReturnValue().Set(result);
@@ -254,11 +254,15 @@ void PCRE2Wrapper::Replace(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 				const jpcre2::VecOff* vec_soff = me.getMatchStartOffsetVector();
 				size_t match_offset = (*vec_soff)[pos];
 				
-				const unsigned argCount = 3 + cg.size();
+				uint32_t numCaptures = obj->re.getNumCaptures();
+				const unsigned argCount = 3 + numCaptures + 1;
 				v8::Local<v8::Value> *argVector = new v8::Local<v8::Value>[argCount];
 
 				for ( size_t i=0; i<cg.size(); i++ ) {
 					argVector[i] = Nan::New(cg[i]).ToLocalChecked(); //match, p1, p2, ... , pn
+				}
+				for ( size_t i=cg.size(); i<numCaptures+1; i++ ) {
+					argVector[i] = Nan::Null(); // pad with null
 				}
 
 				argVector[argCount-3] = Nan::New((uint32_t)match_offset); //offset
@@ -268,7 +272,7 @@ void PCRE2Wrapper::Replace(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 				argVector[argCount-1] = named; //named
 				
 				for ( auto const& ent : ng ) {
-					named->Set(Nan::New(ent.first).ToLocalChecked(), Nan::New(ent.second).ToLocalChecked());
+					named->Set(Nan::GetCurrentContext(), Nan::New(ent.first).ToLocalChecked(), Nan::New(ent.second).ToLocalChecked());
 				}
 
 				v8::Local<v8::Value> returned = Nan::Callback(callback).Call(argCount, argVector);

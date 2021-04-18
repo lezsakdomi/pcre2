@@ -3,7 +3,6 @@ config.status
 config.log
 libtool
 
-src/*.c
 src/*.o
 src/*.lo
 src/config.h
