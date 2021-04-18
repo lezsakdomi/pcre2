@@ -15,6 +15,7 @@ Requirements
 Install
 =======
 
+    git submodule update --init
     npm install pcre2
 
 	
