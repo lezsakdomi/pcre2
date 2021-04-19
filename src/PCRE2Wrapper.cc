@@ -284,10 +284,15 @@ void PCRE2Wrapper::Replace(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 				return *Nan::Utf8String(returned);
 			}
 		);
-		
-		std::string result = me.replace();
-		
-		info.GetReturnValue().Set(Nan::New(result).ToLocalChecked());
+
+		{
+			jpcre2::Uint po = 0, jo = 0;
+			int en = 0;
+			jpcre2::SIZE_T eo = 0;
+			jpcre2::MOD::toReplaceOption(obj->flags, true, &po, &jo, &en, &eo);
+			std::string result = me.nreplace(true, po);
+			info.GetReturnValue().Set(Nan::New(result).ToLocalChecked());
+		}
 	}
 }
 
