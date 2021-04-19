@@ -50,15 +50,22 @@ void PCRE2Wrapper::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 	std::string flags;
 	
 	if ( info[0]->IsString() ) {
-		pattern = *Nan::Utf8String(Nan::To<v8::String>(info[0]).ToLocalChecked());
-		flags = info[1]->IsUndefined() ? "" : *Nan::Utf8String(Nan::To<v8::String>(info[1]).ToLocalChecked());
+		Nan::Utf8String nanPattern(Nan::To<v8::String>(info[0]).ToLocalChecked());
+		pattern = std::string(*nanPattern, nanPattern.length());
+		if (info[1]->IsUndefined()) {
+			flags = "";
+		} else {
+			Nan::Utf8String nanFlags(Nan::To<v8::String>(info[1]).ToLocalChecked());
+			flags = std::string(*nanFlags, nanFlags.length());
+		}
 	}
 	else if ( info[0]->IsRegExp() ) {
 		v8::Local<v8::RegExp> v8Regexp = info[0].As<v8::RegExp>();
 		v8::Local<v8::String> v8Source = v8Regexp->GetSource();
 		v8::RegExp::Flags v8Flags = v8Regexp->GetFlags();
-		
-		pattern = *Nan::Utf8String(v8Source);
+
+		Nan::Utf8String nanV8Source(v8Source);
+		pattern = std::string(*nanV8Source, nanV8Source.length());
 		
 		if ( bool(v8Flags & v8::RegExp::kIgnoreCase) ) flags += "i";
 		if ( bool(v8Flags & v8::RegExp::kMultiline) ) flags += "m";
@@ -66,8 +73,9 @@ void PCRE2Wrapper::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 	}
 
 	if( strchr(flags.c_str(), 'g') ) obj->global = true;
-	
-	std::string constructorName = *Nan::Utf8String(info.This()->GetConstructorName());
+
+	Nan::Utf8String nanConstructorName(info.This()->GetConstructorName());
+	std::string constructorName(*nanConstructorName, nanConstructorName.length());
 	
 	if( constructorName == "PCRE2JIT" ) {
 		flags += "S";
@@ -89,8 +97,9 @@ void PCRE2Wrapper::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
 void PCRE2Wrapper::Test(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 	PCRE2Wrapper *obj = ObjectWrap::Unwrap<PCRE2Wrapper>(info.This());
-	
-	std::string subject = *Nan::Utf8String(info[0]);
+
+	Nan::Utf8String nanSubject(info[0]);
+	std::string subject(*nanSubject, nanSubject.length());
 	
 	jp::RegexMatch& rm = obj->rm;
 	
@@ -115,8 +124,9 @@ void PCRE2Wrapper::Test(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
 void PCRE2Wrapper::Exec(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 	PCRE2Wrapper *obj = ObjectWrap::Unwrap<PCRE2Wrapper>(info.This());
-	
-	std::string subject = *Nan::Utf8String(info[0]);
+
+	Nan::Utf8String nanSubject(info[0]);
+	std::string subject(*nanSubject, nanSubject.length());
 	jp::RegexMatch& rm = obj->rm;
 	
 	rm.clear();
@@ -176,7 +186,8 @@ void PCRE2Wrapper::Match(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 		return;
 	}
 	
-	std::string subject = *Nan::Utf8String(info[0]);
+	Nan::Utf8String nanSubject(info[0]);
+	std::string subject(*nanSubject, nanSubject.length());
 	jp::RegexMatch& rm = obj->rm;
 	
 	rm.clear();
@@ -277,11 +288,10 @@ void PCRE2Wrapper::Replace(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 					named->Set(Nan::GetCurrentContext(), Nan::New(ent.first).ToLocalChecked(), Nan::New(ent.second).ToLocalChecked());
 				}
 
-				v8::Local<v8::Value> returned = Nan::Callback(callback).Call(argCount, argVector);
-
+				Nan::Utf8String retval(Nan::Callback(callback).Call(argCount, argVector));
+				std::string returned(*retval, retval.length());
 				delete[] argVector;
-
-				return *Nan::Utf8String(returned);
+				return returned;
 			}
 		);
 
@@ -307,7 +317,8 @@ void PCRE2Wrapper::ToString(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 void PCRE2Wrapper::HasModifier(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 	PCRE2Wrapper *obj = ObjectWrap::Unwrap<PCRE2Wrapper>(info.This());
 	
-	std::string wanted = *Nan::Utf8String(info[0]);
+	Nan::Utf8String nanWanted(info[0]);
+	std::string wanted(*nanWanted, nanWanted.length());
 	
 	bool result = true;
 	
@@ -324,7 +335,8 @@ void PCRE2Wrapper::HasModifier(const Nan::FunctionCallbackInfo<v8::Value>& info)
 void PCRE2Wrapper::PropertyGetter(v8::Local<v8::String> property, const Nan::PropertyCallbackInfo<v8::Value>& info) {
 	PCRE2Wrapper *obj = ObjectWrap::Unwrap<PCRE2Wrapper>(info.This());
 	
-	std::string name = *Nan::Utf8String(property);
+	Nan::Utf8String nanProperty(property);
+	std::string name(*nanProperty, nanProperty.length());
 	
 	if ( name == "source" ) {
 		info.GetReturnValue().Set(Nan::New(obj->re.getPattern()).ToLocalChecked());
@@ -353,7 +365,8 @@ void PCRE2Wrapper::PropertyGetter(v8::Local<v8::String> property, const Nan::Pro
 NAN_SETTER(PCRE2Wrapper::PropertySetter) {
 	PCRE2Wrapper *obj = ObjectWrap::Unwrap<PCRE2Wrapper>(info.This());
 	
-	std::string name = *Nan::Utf8String(property);
+	Nan::Utf8String nanProperty(property);
+	std::string name(*nanProperty, nanProperty.length());
 	
 	if ( name == "lastIndex" ) {
 		int32_t val = Nan::To<int32_t>(value).FromJust();
