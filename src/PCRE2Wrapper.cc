@@ -290,10 +290,9 @@ void PCRE2Wrapper::Replace(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 			int en = 0;
 			jpcre2::SIZE_T eo = 0;
 			jpcre2::MOD::toReplaceOption(obj->flags, true, &po, &jo, &en, &eo);
-			std::string result = me.replace(true, po);
+			std::string result = me.nreplace(true, po);
 			info.GetReturnValue().Set(Nan::New(result).ToLocalChecked());
 		}
-		
 	}
 }
 
