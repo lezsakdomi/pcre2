@@ -155,10 +155,13 @@ void PCRE2Wrapper::Exec(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 	
 		v8::Local<v8::Array> result = Nan::New<v8::Array>(result_count);
 		
-		std::string whole_match = obj->vec_num[0][0];
+		std::string whole_match = *obj->vec_num[0][0];
 		
 		for ( size_t i=0; i<obj->vec_num[0].size(); i++ ) {
-			result->Set(Nan::GetCurrentContext(), i, Nan::New(obj->vec_num[0][i]).ToLocalChecked());
+			if (obj->vec_num[0][i])
+				result->Set(Nan::GetCurrentContext(), i, Nan::New(*obj->vec_num[0][i]).ToLocalChecked());
+			else
+				result->Set(Nan::GetCurrentContext(), i, Nan::Null());
 		}
 				
 		v8::Local<v8::Object> named = Nan::New<v8::Object>();
@@ -213,7 +216,10 @@ void PCRE2Wrapper::Match(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 		v8::Local<v8::Array> result = Nan::New<v8::Array>(result_count);
 		
 		for ( size_t i=0; i<obj->vec_num.size(); ++i ) {
-			result->Set(Nan::GetCurrentContext(), i, Nan::New(obj->vec_num[i][0]).ToLocalChecked());
+			if (obj->vec_num[i][0])
+				result->Set(Nan::GetCurrentContext(), i, Nan::New(*obj->vec_num[i][0]).ToLocalChecked());
+			else
+				result->Set(Nan::GetCurrentContext(), i, Nan::Null());
 		}
 		
 		info.GetReturnValue().Set(result);
@@ -267,15 +273,14 @@ void PCRE2Wrapper::Replace(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 				const jpcre2::VecOff* vec_soff = me.getMatchStartOffsetVector();
 				size_t match_offset = (*vec_soff)[pos];
 				
-				uint32_t numCaptures = obj->re.getNumCaptures();
-				const unsigned argCount = 3 + numCaptures + 1;
+				const unsigned argCount = 3 + cg.size();
 				v8::Local<v8::Value> *argVector = new v8::Local<v8::Value>[argCount];
 
 				for ( size_t i=0; i<cg.size(); i++ ) {
-					argVector[i] = Nan::New(cg[i]).ToLocalChecked(); //match, p1, p2, ... , pn
-				}
-				for ( size_t i=cg.size(); i<numCaptures+1; i++ ) {
-					argVector[i] = Nan::Null(); // pad with null
+					if (cg[i]) //match, p1, p2, ... , pn
+						argVector[i] = Nan::New(*cg[i]).ToLocalChecked();
+					else
+						argVector[i] = Nan::Null();
 				}
 
 				argVector[argCount-3] = Nan::New((uint32_t)match_offset); //offset
