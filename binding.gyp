@@ -20,17 +20,13 @@
 			"libraries": [ "../build_pcre2/lib/libpcre2-8.a" ],
 			'conditions': [
 				[ 'OS!="win"', {
-					'cflags+': [ '-std=c++11' ],
-					'cflags_c+': [ '-std=c++11' ],
-					'cflags_cc+': [ '-std=c++11' ],
+					'cflags_cc+': [ '-std=c++17' ],
+				}],
+				[ 'OS=="win"', {
+					'cflags_cc+': [ '/std:c++17' ],
 				}],
 			],
-			'cflags!': [ '-O2' ],
-			'cflags+': [ '-O3' ],
-			'cflags_cc!': [ '-O2' ],
-			'cflags_cc+': [ '-O3' ],
-			'cflags_c!': [ '-O2' ],
-			'cflags_c+': [ '-O3' ],
+			'defines': [ 'JPCRE2_UNSET_CAPTURES_NULL' ],
 		},
 	]
 }
