@@ -1,16 +1,16 @@
 {
   "name": "pcre2",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "homepage": "https://github.com/Kamil93/node-pcre2",
   "repository": {
     "type": "git",
     "url": "git://github.com/Kamil93/node-pcre2.git"
   },
-  "author": "Kamil Krzyszczuk (https://github.com/Kamil93)",
+  "author": "Github users: @Kamil93, @lezsakdomi, @rrthomas",
   "description": "A PCRE2 binding for node.js",
   "main": "./lib/pcre2",
   "engines": {
-    "node": ">=0.8.0"
+    "node": ">=4.0.0"
   },
   "keywords": [
     "pcre2",

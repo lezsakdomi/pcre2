@@ -8,13 +8,14 @@ Same API as RegExp class! But with bunch of new features like negative/positive 
 Requirements
 ============
 
-* [node.js](http://nodejs.org/) -- v0.8.0 or newer
+* [node.js](http://nodejs.org/) -- v4 or newer
 * Linux, or OSX (currently not Windows)
 
 
 Install
 =======
 
+    git submodule update --init
     npm install pcre2
 
 	

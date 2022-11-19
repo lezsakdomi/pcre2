@@ -2,14 +2,15 @@ Makefile
 config.status
 config.log
 libtool
+autom4te.cache/
 
-src/*.c
 src/*.o
 src/*.lo
 src/config.h
 src/pcre2.h
 src/.dirstamp
 src/stamp-h1
+src/pcre2_chartables.c
 src/.*/
 .libs/
 libpcre2-*.pc
